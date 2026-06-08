@@ -80,8 +80,8 @@ const PostFood = () => {
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-12 h-12 rounded-xl bg-emerald-200 dark:bg-emerald-900/30 flex items-center justify-center">
-                <PlusCircle className="h-6 w-6 text-emerald-500 dark:text-emerald-400" />
+              <div className="w-12 h-12 rounded-xl bg-emerald-200 dark:bg-emerald-800/40 flex items-center justify-center">
+                <PlusCircle className="h-6 w-6 text-emerald-400" />
               </div>
               <h1 className="text-3xl font-bold text-slate-900 ">Post Surplus Food</h1>
             </div>
@@ -94,14 +94,14 @@ const PostFood = () => {
               Tells the restaurant which listing they're basing this on,
               and reminds them to update the time fields (which were cleared). */}
           {template && !successId && (
-            <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-5">
+            <div className="mb-6 bg-emerald-50 dark:bg-slate-800 border border-emerald-200 dark:border-emerald-900/50 transition-all duration-200 rounded-2xl p-5">
               <div className="flex items-start gap-3">
-                <RotateCcw className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                <RotateCcw className="h-5 w-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-blue-800 dark:text-blue-300">
+                  <p className="font-semibold text-emerald-800 dark:text-emerald-400">
                     Reposting "{template.foodName}"
                   </p>
-                  <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
+                  <p className="text-sm text-emerald-700 dark:text-slate-300 mt-1">
                     Food details and address have been pre-filled. Set new expiry and pickup times before posting.
                   </p>
                 </div>
