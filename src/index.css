@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui;
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  --animation-fade-in: fade-in 0.2s ease-in-out;
+  --animation-slide-up: slide-up 0.3s ease-out;
+}
+
+/* Tell Tailwind v4 to activate dark: variants when the 'dark' class
+   is present on <html>. This is the v4 way — no tailwind.config.js needed. */
+@variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  body {
+    background-color: var(--color-slate-50);
+    color: var(--color-slate-900);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Dark mode body defaults — background and text flip globally */
+  .dark body {
+    background-color: var(--color-slate-900);
+    color: var(--color-slate-100);
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
