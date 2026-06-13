@@ -26,6 +26,7 @@ const RestaurantDashboard = lazy(() => import('./pages/restaurant/Dashboard'));
 const PostFood            = lazy(() => import('./pages/restaurant/PostFood'));
 const ManageListings      = lazy(() => import('./pages/restaurant/ManageListings'));
 const DonationHistory     = lazy(() => import('./pages/restaurant/DonationHistory'));
+const Analytics           = lazy(() => import('./pages/restaurant/Analytics'));
 
 const NgoDashboard        = lazy(() => import('./pages/ngo/Dashboard'));
 const BrowseListings      = lazy(() => import('./pages/ngo/BrowseListings'));
@@ -116,6 +117,15 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute requiredRole={ROLES.RESTAURANT}>
             <DonationHistory />
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: ROUTES.RESTAURANT_ANALYTICS,
+        element: (
+          <ProtectedRoute requiredRole={ROLES.RESTAURANT}>
+            <Analytics />
           </ProtectedRoute>
         ),
       },

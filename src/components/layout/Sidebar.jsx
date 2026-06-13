@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, PlusCircle, ClipboardList,
-  History, Search, Package
+  History, Search, Package, BarChart2
 } from 'lucide-react';
 import useAuth from '../../hooks/useAuth';
 import { ROLES, ROUTES } from '../../utils/constants';
@@ -19,6 +19,7 @@ const Sidebar = () => {
     { to: ROUTES.RESTAURANT_POST_FOOD,        label: 'Post Food',       icon: PlusCircle      },
     { to: ROUTES.RESTAURANT_MANAGE_LISTINGS,  label: 'Manage Listings', icon: ClipboardList   },
     { to: ROUTES.RESTAURANT_DONATION_HISTORY, label: 'Donation History',icon: History         },
+    { to: ROUTES.RESTAURANT_ANALYTICS,        label: 'Analytics',       icon: BarChart2       },
   ];
 
   const ngoLinks = [

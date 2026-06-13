@@ -80,6 +80,7 @@ export const ROUTES = {
   RESTAURANT_POST_FOOD: '/restaurant/post-food',
   RESTAURANT_MANAGE_LISTINGS: '/restaurant/manage-listings',
   RESTAURANT_DONATION_HISTORY: '/restaurant/donation-history',
+  RESTAURANT_ANALYTICS: '/restaurant/analytics',
 
   // NGO routes
   NGO_DASHBOARD: '/ngo/dashboard',
