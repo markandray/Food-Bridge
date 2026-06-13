@@ -6,7 +6,7 @@ import {
   PieChart, Pie, Cell, Legend,
   LineChart, Line,
 } from 'recharts';
-import { BarChart2, Leaf, Users, Utensils, Clock } from 'lucide-react';
+import { BarChart2, Leaf, Users, Utensils, Clock ,Tag, TrendingUp, Award} from 'lucide-react';
 import useAuth from '../../hooks/useAuth';
 import usePickups from '../../hooks/usePickups';
 import useAnalytics from '../../hooks/useAnalytics';
@@ -104,6 +104,11 @@ const Analytics = () => {
     peakDonationTimes,
     ngoPartnerBreakdown,
     summary,
+    vegNonVegDistribution,
+    topDonatedTags,
+    tagWiseQuantity,
+    ngoTagPreferences,
+    tagInsights,
   } = useAnalytics(completedPickups);
 
   // Only show the hours window where any donations happened (±1 hr padding)
@@ -306,6 +311,202 @@ const Analytics = () => {
             </div>
           </ChartCard>
 
+        </div>
+
+        {/* ── Tag Analytics Section ── */}
+        <div className="mt-10">
+
+          {/* Section header */}
+          <div className="flex items-center gap-2 mb-6">
+            <Tag className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Category Tag Insights</h2>
+          </div>
+
+          {/* Tag insight summary cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <StatsCard
+              title="Most Donated Category"
+              value={tagInsights.mostDonated === '—' ? '—' : tagInsights.mostDonated}
+              icon={Award}
+              color="emerald"
+              subtitle="By pickup count"
+            />
+            <StatsCard
+              title="Recently Trending"
+              value={tagInsights.fastestGrowing === '—' ? '—' : tagInsights.fastestGrowing}
+              icon={TrendingUp}
+              color="blue"
+              subtitle="Growing in recent pickups"
+            />
+            <StatsCard
+              title="Most Claimed Category"
+              value={tagInsights.mostClaimed === '—' ? '—' : tagInsights.mostClaimed}
+              icon={Tag}
+              color="purple"
+              subtitle="By completed pickups"
+            />
+          </div>
+
+          {/* Tag charts grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            {/* ── Chart 5: Veg vs Non-Veg distribution (Pie) ── */}
+            <ChartCard
+              title="Veg vs Non-Veg Distribution"
+              subtitle="Completed donations by dietary category · a pickup can appear in both"
+              isEmpty={vegNonVegDistribution.length === 0}
+              emptyText="No tagged donations yet"
+            >
+              <ResponsiveContainer width="100%" height={220}>
+                <PieChart>
+                  <Pie
+                    data={vegNonVegDistribution}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={88}
+                    dataKey="value"
+                    labelLine={false}
+                    label={<PieLabel />}
+                  >
+                    {vegNonVegDistribution.map((_, index) => (
+                      <Cell key={index} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value, name) => [`${value} pickup${value !== 1 ? 's' : ''}`, name]}
+                    contentStyle={{ borderRadius: '12px', fontSize: '12px', border: '1px solid #e2e8f0' }}
+                  />
+                  <Legend
+                    formatter={(value) => <span style={{ fontSize: 11, color: CHART_TEXT }}>{value}</span>}
+                    iconSize={10}
+                    iconType="circle"
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            {/* ── Chart 6: Top donated tags (Horizontal Bar) ── */}
+            <ChartCard
+              title="Top Donated Tags"
+              subtitle="Most frequently used tags across completed donations"
+              isEmpty={topDonatedTags.length === 0}
+              emptyText="No tags on completed donations yet"
+            >
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart
+                  data={topDonatedTags.slice(0, 8)}
+                  layout="vertical"
+                  margin={{ top: 4, right: 24, left: 8, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} horizontal={false} />
+                  <XAxis
+                    type="number"
+                    tick={{ fontSize: 11, fill: CHART_TEXT }}
+                    tickLine={false}
+                    axisLine={false}
+                    allowDecimals={false}
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="tag"
+                    tick={{ fontSize: 11, fill: CHART_TEXT }}
+                    tickLine={false}
+                    axisLine={false}
+                    width={64}
+                  />
+                  <Tooltip content={<ChartTooltip />} />
+                  <Bar
+                    dataKey="count"
+                    name="pickups"
+                    fill="#8b5cf6"
+                    radius={[0, CHART_RADIUS, CHART_RADIUS, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            {/* ── Chart 7: Tag-wise quantity donated (Horizontal Bar) ── */}
+            <ChartCard
+              title="Tag-wise Quantity Donated"
+              subtitle="Total kg donated per category tag · kg unit only"
+              isEmpty={tagWiseQuantity.length === 0}
+              emptyText="No kg-unit donations with tags yet"
+            >
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart
+                  data={tagWiseQuantity.slice(0, 8)}
+                  layout="vertical"
+                  margin={{ top: 4, right: 24, left: 8, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} horizontal={false} />
+                  <XAxis
+                    type="number"
+                    tick={{ fontSize: 11, fill: CHART_TEXT }}
+                    tickLine={false}
+                    axisLine={false}
+                    allowDecimals={false}
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="tag"
+                    tick={{ fontSize: 11, fill: CHART_TEXT }}
+                    tickLine={false}
+                    axisLine={false}
+                    width={64}
+                  />
+                  <Tooltip content={<ChartTooltip />} />
+                  <Bar
+                    dataKey="totalKg"
+                    name="kg"
+                    fill="#f59e0b"
+                    radius={[0, CHART_RADIUS, CHART_RADIUS, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            {/* ── Chart 8: NGO tag preferences (Table) ── */}
+            <ChartCard
+              title="NGO Tag Preferences"
+              subtitle="Top 5 NGO partners · top 3 tags each by pickup count"
+              isEmpty={ngoTagPreferences.length === 0}
+              emptyText="No tagged pickups by NGOs yet"
+            >
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-100 dark:border-slate-700">
+                      <th className="text-left py-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">NGO</th>
+                      <th className="text-left py-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Top Tags</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50 dark:divide-slate-700/50">
+                    {ngoTagPreferences.map((ngo) => (
+                      <tr key={ngo.ngoName} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                        <td className="py-2.5 font-medium text-slate-800 dark:text-slate-200 truncate max-w-[120px] pr-3">
+                          {ngo.ngoName}
+                        </td>
+                        <td className="py-2.5">
+                          <div className="flex flex-wrap gap-1.5">
+                            {ngo.tags.map(({ tag, count }) => (
+                              <span
+                                key={tag}
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 border border-violet-200 dark:border-violet-800"
+                              >
+                                {tag}
+                                <span className="text-violet-400 dark:text-violet-500 font-normal">×{count}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </ChartCard>
+
+          </div>
         </div>
       </main>
     </div>

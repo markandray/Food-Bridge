@@ -10,6 +10,11 @@ import {
   getMostDonatedFoodTypes,
   getPeakDonationTimes,
   getNgoPartnerBreakdown,
+  getVegNonVegDistribution,
+  getTopDonatedTags,
+  getTagWiseQuantity,
+  getNgoTagPreferences,
+  getTagInsights,
 } from '../services/analytics.service';
 
 const useAnalytics = (completedPickups = []) => {
@@ -60,12 +65,45 @@ const useAnalytics = (completedPickups = []) => {
     };
   }, [completedPickups, peakDonationTimes]);
 
+  const vegNonVegDistribution = useMemo(
+    () => getVegNonVegDistribution(completedPickups),
+    [completedPickups]
+  );
+
+  const topDonatedTags = useMemo(
+    () => getTopDonatedTags(completedPickups),
+    [completedPickups]
+  );
+
+  const tagWiseQuantity = useMemo(
+    () => getTagWiseQuantity(completedPickups),
+    [completedPickups]
+  );
+
+  const ngoTagPreferences = useMemo(
+    () => getNgoTagPreferences(completedPickups),
+    [completedPickups]
+  );
+
+  // tagInsights depends on topDonatedTags so it goes last.
+  // Passing topDonatedTags in avoids re-iterating completedPickups
+  // inside getTagInsights for the mostDonated value.
+  const tagInsights = useMemo(
+    () => getTagInsights(completedPickups, topDonatedTags),
+    [completedPickups, topDonatedTags]
+  );
+
   return {
     foodSavedPerWeek,
     mostDonatedFoodTypes,
     peakDonationTimes,
     ngoPartnerBreakdown,
     summary,
+    vegNonVegDistribution,
+    topDonatedTags,
+    tagWiseQuantity,
+    ngoTagPreferences,
+    tagInsights,
   };
 };
 

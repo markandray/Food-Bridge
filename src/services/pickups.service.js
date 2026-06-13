@@ -27,6 +27,7 @@ export const createPickup = async (listing, ngoUser) => {
       quantity:       listing.quantity,
       unit:           listing.unit,
       city:           listing.city,
+      tags:           listing.tags || [],
 
       pickupAddress:     listing.pickupAddress || '',
       pickupWindowStart: listing.pickupWindowStart || null,
