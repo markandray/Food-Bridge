@@ -48,6 +48,20 @@ const ListingCard = memo(({
               {listing.quantity} {listing.unit}
             </span>
           </div>
+          {/* Feature L: tags — only rendered when present.
+              Old listings without a tags field show nothing here. */}
+          {Array.isArray(listing.tags) && listing.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {listing.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="space-y-2 mb-4 flex-1">

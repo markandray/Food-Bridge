@@ -52,6 +52,20 @@ export const FOOD_UNITS = [
   { value: 'boxes', label: 'Boxes' },
 ];
 
+// --- Food Category Tags ---
+export const FOOD_TAGS = [
+  { value: 'veg',        label: '🥦 Veg'        },
+  { value: 'non-veg',    label: '🍗 Non-Veg'    },
+  { value: 'jain',       label: '🌿 Jain'        },
+  { value: 'dairy-free', label: '🥛 Dairy-Free'  },
+  { value: 'cooked',     label: '🍲 Cooked'      },
+  { value: 'packed',     label: '📦 Packed'      },
+  { value: 'bakery',     label: '🥐 Bakery'      },
+  { value: 'fruits',     label: '🍎 Fruits'      },
+  { value: 'rice',       label: '🍚 Rice'        },
+  { value: 'snacks',     label: '🍿 Snacks'      },
+];
+
 // --- Supported Cities ---
 export const CITIES = [
   'Mumbai',

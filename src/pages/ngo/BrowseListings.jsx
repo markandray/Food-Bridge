@@ -25,6 +25,7 @@ const BrowseListings = () => {
   const isMultiCity = userCities.length > 1;
 
   const [rawSearch, setRawSearch]         = useState('');
+  const [selectedTags, setSelectedTags]   = useState([]);
   // Feature J: activeCities tracks which of the NGO's cities are currently shown.
   // Default: all cities active (show everything across all their cities).
   const [activeCities, setActiveCities]   = useState(userCities);
@@ -44,17 +45,19 @@ const BrowseListings = () => {
   const listingFilters = useMemo(() => {
     if (isMultiCity) {
       return {
-        cities:     activeCities,   // handled by 'in' query in service
-        unit:       filters.unit,
-        searchTerm: debouncedSearch,
+        cities:       activeCities,
+        unit:         filters.unit,
+        searchTerm:   debouncedSearch,
+        selectedTags,
       };
     }
     return {
-      city:       filters.city,
-      unit:       filters.unit,
-      searchTerm: debouncedSearch,
+      city:         filters.city,
+      unit:         filters.unit,
+      searchTerm:   debouncedSearch,
+      selectedTags,
     };
-  }, [isMultiCity, activeCities, filters.city, filters.unit, debouncedSearch]);
+  }, [isMultiCity, activeCities, filters.city, filters.unit, debouncedSearch, selectedTags]);
 
   const { listings, loading, error, claimListing } = useListings(listingFilters, 'browse');
 
@@ -168,9 +171,12 @@ const BrowseListings = () => {
             <ListingFilters
               filters={{ ...filters, searchTerm: rawSearch }}
               onChange={handleFilterChange}
+              onTagsChange={setSelectedTags}
+              selectedTags={selectedTags}
               showSearch
               showCity={!isMultiCity}
               showUnit
+              showTags
             />
           </div>
 

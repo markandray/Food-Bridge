@@ -3,7 +3,7 @@ import { Upload, X, Image, MapPin } from 'lucide-react';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { storage } from '../../services/firebase';
 import { validateListingForm, isFormValid } from '../../utils/validators';
-import { CITIES, FOOD_UNITS, LISTING_LIMITS } from '../../utils/constants';
+import { CITIES, FOOD_UNITS, FOOD_TAGS, LISTING_LIMITS } from '../../utils/constants';
 import { toDatetimeLocalString } from '../../utils/dateHelpers';
 import Button from '../common/Button';
 import Input from '../common/Input';
@@ -14,6 +14,7 @@ const EMPTY_FORM = {
   foodName: '', quantity: '', unit: '', description: '',
   expiryTime: '', pickupWindowStart: '', pickupWindowEnd: '',
   city: '', pickupAddress: '',
+  tags: [],
 };
 
 const ListingForm = ({
@@ -185,6 +186,47 @@ const ListingForm = ({
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Feature L: Food Category Tags */}
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 space-y-4">
+        <div>
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100">Category Tags</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Optional — select all that apply
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {FOOD_TAGS.map(({ value, label }) => {
+            const isSelected = formData.tags.includes(value);
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    tags: isSelected
+                      ? prev.tags.filter((t) => t !== value)
+                      : [...prev.tags, value],
+                  }));
+                }}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                  isSelected
+                    ? 'bg-emerald-600 dark:bg-emerald-500 text-white border-emerald-600 dark:border-emerald-500'
+                    : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:border-emerald-400 dark:hover:border-emerald-500'
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+        {formData.tags.length > 0 && (
+          <p className="text-xs text-slate-400 dark:text-slate-500">
+            {formData.tags.length} tag{formData.tags.length > 1 ? 's' : ''} selected
+          </p>
+        )}
       </div>
 
       {/* Time & Location — pickupAddress added at the bottom of this section */}

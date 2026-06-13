@@ -1,5 +1,5 @@
 import { Search, MapPin, Package, X } from 'lucide-react';
-import { CITIES, FOOD_UNITS } from '../../utils/constants';
+import { CITIES, FOOD_UNITS ,  FOOD_TAGS } from '../../utils/constants';
 import Input from '../common/Input';
 
 const cn = (...classes) => classes.filter(Boolean).join(' ');
@@ -7,10 +7,13 @@ const cn = (...classes) => classes.filter(Boolean).join(' ');
 const ListingFilters = ({
   filters,
   onChange,
+  onTagsChange,
+  selectedTags = [],
   showSearch = true,
   showCity = true,
   showUnit = true,
   showStatus = false,
+  showTags = false,
   statusOptions = [],
 }) => {
   const handleChange = (e) => {
@@ -18,13 +21,15 @@ const ListingFilters = ({
     onChange(name, value);
   };
 
-  const hasActiveFilters = filters.searchTerm || filters.city || filters.unit || filters.status;
+  const hasActiveFilters =
+    filters.searchTerm || filters.city || filters.unit || filters.status || selectedTags.length > 0;
 
   const clearAll = () => {
-    if (filters.searchTerm) onChange('searchTerm', '');
-    if (filters.city)       onChange('city', '');
-    if (filters.unit)       onChange('unit', '');
-    if (filters.status)     onChange('status', '');
+    if (filters.searchTerm)    onChange('searchTerm', '');
+    if (filters.city)          onChange('city', '');
+    if (filters.unit)          onChange('unit', '');
+    if (filters.status)        onChange('status', '');
+    if (selectedTags.length > 0 && onTagsChange) onTagsChange([]);
   };
 
   // Shared select classes for all filter dropdowns
@@ -107,6 +112,43 @@ const ListingFilters = ({
           </div>
         )}
       </div>
+      {showTags && onTagsChange && (
+          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+              Filter by tag
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {FOOD_TAGS.map(({ value, label }) => {
+                const isActive = selectedTags.includes(value);
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => {
+                      onTagsChange(
+                        isActive
+                          ? selectedTags.filter((t) => t !== value)
+                          : [...selectedTags, value]
+                      );
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                      isActive
+                        ? 'bg-emerald-600 dark:bg-emerald-500 text-white border-emerald-600 dark:border-emerald-500'
+                        : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:border-emerald-400 dark:hover:border-emerald-500'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+            {selectedTags.length > 0 && (
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">
+                {selectedTags.length} tag{selectedTags.length > 1 ? 's' : ''} active
+              </p>
+            )}
+          </div>
+        )}
     </div>
   );
 };

@@ -89,6 +89,9 @@ export const createListing = async (listingData) => {
 
     const docRef = await addDoc(listingsRef, {
       ...listingData,
+      // Ensure tags is always a clean array — guards against undefined if
+      // an older call site doesn't pass tags, and strips any non-allowed values.
+      tags: Array.isArray(listingData.tags) ? listingData.tags : [],
       status: LISTING_STATUS.AVAILABLE,
       claimedBy: null,
       claimedByName: null,

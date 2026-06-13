@@ -107,8 +107,23 @@ const useListings = (filters = {}, mode = 'browse') => {
       result = result.filter((l) => l.unit === filters.unit);
     }
 
+    // Feature L: client-side tag filtering.
+    // selectedTags is string[]. A listing matches if it contains ALL selected tags
+    // (AND logic — more specific = fewer results, which is what a user expects
+    // when they pick both "veg" and "packed").
+    // Listings without a tags field (old data) safely return false for every
+    // tag check, so they are hidden only when a tag filter is active —
+    // with no tags selected they still appear normally.
+
+    if (filters.selectedTags && filters.selectedTags.length > 0) {
+      result = result.filter((l) =>
+        Array.isArray(l.tags) &&
+        filters.selectedTags.every((tag) => l.tags.includes(tag))
+      );
+    }
+
     return result;
-  }, [state.listings, filters.searchTerm, filters.city, filters.cities, filters.unit, mode]);
+  }, [state.listings, filters.searchTerm, filters.city, filters.cities, filters.unit, filters.selectedTags, mode]);
 
   const createListing = useCallback(async (listingData, restaurantUser) => {
     try {
