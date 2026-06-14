@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { ClipboardList, RotateCcw } from 'lucide-react';
+import { ClipboardList, RotateCcw , MessageCircle  } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import useListings from '../../hooks/useListings';
@@ -10,7 +10,9 @@ import ListingForm from '../../components/listings/ListingForm';
 import Modal from '../../components/common/Modal';
 import Button from '../../components/common/Button';
 import Sidebar from '../../components/layout/Sidebar';
-import { LISTING_STATUS, ROLES, ROUTES } from '../../utils/constants';
+import { LISTING_STATUS, ROLES, ROUTES, PICKUP_STATUS } from '../../utils/constants';
+import usePickups from '../../hooks/usePickups';
+import ChatWindow from '../../components/chat/ChatWindow';
 
 const STATUS_OPTIONS = [
   { value: LISTING_STATUS.AVAILABLE, label: 'Available' },
@@ -32,6 +34,25 @@ const ManageListings = () => {
 
   const { listings, loading, error, deleteListing, completeListing, updateListing } =
     useListings({ restaurantId: userProfile?.uid }, 'manage');
+
+  // Chat needs the pickup document (which holds pickupId) for claimed listings.
+  // We already subscribe to restaurant pickups here so no extra Firestore
+  // reads are needed — activePickups is a derived slice from the same listener.
+  const { activePickups } = usePickups(userProfile?.uid, ROLES.RESTAURANT);
+
+  const [chatModal, setChatModal] = useState({ open: false, pickupId: null, label: '' });
+
+  const handleChat = useCallback((listing) => {
+    // Find the pickup document that corresponds to this claimed listing.
+    // activePickups is already in memory — no Firestore read needed.
+    const pickup = activePickups.find((p) => p.listingId === listing.id);
+    if (!pickup) return;
+    setChatModal({
+      open:    true,
+      pickupId: pickup.id,
+      label:   `${listing.foodName} · ${pickup.ngoName}`,
+    });
+  }, [activePickups]);
 
   const filteredListings = useMemo(() => {
     return listings.filter((l) => {
@@ -162,6 +183,7 @@ const ManageListings = () => {
           onDelete={handleDelete}
           onEdit={handleEdit}
           onRepost={handleRepost}
+          onChat={handleChat}
           actionLoading={actionLoading}
           emptyTitle="No listings yet"
           emptyDescription="Post your first food donation to get started."
@@ -216,6 +238,27 @@ const ManageListings = () => {
             />
           </Modal>
         )}
+
+        {/* Chat modal — only available for claimed listings */}
+        <Modal
+          isOpen={chatModal.open}
+          onClose={() => setChatModal({ open: false, pickupId: null, label: '' })}
+          title="Coordinate Pickup"
+          size="lg"
+        >
+          {chatModal.pickupId && (
+            <ChatWindow
+              pickupId={chatModal.pickupId}
+              sender={{
+                senderId:   userProfile.uid,
+                senderName: userProfile.name,
+                senderRole: ROLES.RESTAURANT,
+              }}
+              pickupLabel={chatModal.label}
+            />
+          )}
+        </Modal>
+        
       </main>
     </div>
   );

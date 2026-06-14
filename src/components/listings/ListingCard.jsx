@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import {
   MapPin, Clock, Package, Calendar,
-  CheckCircle, Trash2, Tag, User, Pencil, Navigation, RotateCcw
+  CheckCircle, Trash2, Tag, User, Pencil, Navigation, RotateCcw, MessageCircle
 } from 'lucide-react';
 import Badge from '../common/Badge';
 import Button from '../common/Button';
@@ -9,7 +9,7 @@ import { LISTING_STATUS, STATUS_COLORS, ROLES } from '../../utils/constants';
 import { formatDateTime, formatPickupWindow, getExpiryLabel } from '../../utils/dateHelpers';
 
 const ListingCard = memo(({
-  listing, role, onClaim, onComplete, onDelete, onEdit, onRepost, loading,
+  listing, role, onClaim, onComplete, onDelete, onEdit, onRepost, onChat, loading,
 }) => {
   const isThisLoading = loading === listing.id;
   const statusColor   = STATUS_COLORS[listing.status] || 'slate';
@@ -139,9 +139,16 @@ const ListingCard = memo(({
           )}
 
           {role === ROLES.RESTAURANT && isClaimed && onComplete && (
-            <Button variant="primary" size="sm" fullWidth loading={isThisLoading} onClick={() => onComplete(listing.id)} icon={CheckCircle}>
-              Mark Complete
-            </Button>
+            <div className="flex flex-col gap-2 w-full">
+              <Button variant="primary" size="sm" fullWidth loading={isThisLoading} onClick={() => onComplete(listing.id)} icon={CheckCircle}>
+                Mark Complete
+              </Button>
+              {onChat && (
+                <Button variant="ghost" size="sm" fullWidth onClick={() => onChat(listing)} icon={MessageCircle}>
+                  Coordinate Pickup
+                </Button>
+              )}
+            </div>
           )}
 
           {role === ROLES.RESTAURANT && isAvailable && (

@@ -6,7 +6,7 @@ import { ListingGridSkeleton } from '../common/SkeletonCard';
 
 const ListingGrid = memo(({
   listings, loading, error, role,
-  onClaim, onComplete, onDelete, onEdit, onRepost, // onRepost added
+  onClaim, onComplete, onDelete, onEdit, onRepost, onChat,
   actionLoading,
   emptyTitle = 'No listings found',
   emptyDescription = 'Try adjusting your filters.',
@@ -47,6 +47,7 @@ const ListingGrid = memo(({
           onDelete={onDelete}
           onEdit={onEdit}
           onRepost={onRepost}
+          onChat={onChat}
           loading={actionLoading}
         />
       ))}

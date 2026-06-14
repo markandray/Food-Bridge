@@ -5,6 +5,7 @@ export const COLLECTIONS = {
   USERS: 'users',
   LISTINGS: 'listings',
   PICKUPS: 'pickups',
+  MESSAGES: 'messages',
   IMPACT: 'impact',
   NOTIFICATIONS: 'notifications',
   RATINGS: 'ratings',

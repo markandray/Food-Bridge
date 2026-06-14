@@ -13,6 +13,7 @@ import {
 import { db } from './firebase';
 import { COLLECTIONS, PICKUP_STATUS, LISTING_STATUS } from '../utils/constants';
 import { createNotification, NOTIFICATION_TYPES } from './notifications.service';
+import { createSystemMessage } from './chat.service';
 
 export const createPickup = async (listing, ngoUser) => {
   try {
@@ -27,18 +28,25 @@ export const createPickup = async (listing, ngoUser) => {
       quantity:       listing.quantity,
       unit:           listing.unit,
       city:           listing.city,
-      tags:           listing.tags || [],
+      tags:           Array.isArray(listing.tags) ? listing.tags : [],
 
       pickupAddress:     listing.pickupAddress || '',
       pickupWindowStart: listing.pickupWindowStart || null,
       pickupWindowEnd:   listing.pickupWindowEnd || null,
 
-      claimedAt:      serverTimestamp(),
-      completedAt:    null,
-      status:         PICKUP_STATUS.CLAIMED,
+      claimedAt:   serverTimestamp(),
+      completedAt: null,
+      status:      PICKUP_STATUS.CLAIMED,
     });
 
     await updateDoc(docRef, { pickupId: docRef.id });
+
+    // System message — written after pickupId is known so we can
+    // address the correct subcollection. Fire-and-forget.
+    createSystemMessage(
+      docRef.id,
+      `Pickup claimed by ${ngoUser.name}.`
+    );
 
     return docRef.id;
   } catch (error) {
@@ -109,16 +117,15 @@ export const cancelPickup = async (pickupId, listingId) => {
       claimedByName: null,
       claimedAt:     null,
     });
+
+    // Fire-and-forget — cancel is complete regardless of chat write outcome.
+    createSystemMessage(pickupId, 'Pickup cancelled.');
   } catch (error) {
     throw error;
   }
 };
 
 export const completePickup = async (pickupId, listingId, pickupData) => {
-  // pickupData is the full pickup object — we need restaurantId, ngoId,
-  // ngoName, and foodName to compose the notification messages.
-  // The caller (usePickups / ManageListings flow) already has this object,
-  // so passing it here avoids an extra getDoc call inside the service.
   try {
     const pickupRef = doc(db, COLLECTIONS.PICKUPS, pickupId);
     await updateDoc(pickupRef, {
@@ -133,8 +140,6 @@ export const completePickup = async (pickupId, listingId, pickupData) => {
       completedAt: serverTimestamp(),
     });
 
-    // Notify both parties on completion — fire-and-forget, same reasoning as claimListing.
-    // Restaurant confirmed the pickup — notify the NGO.
     if (pickupData) {
       createNotification(
         pickupData.ngoId,
@@ -143,7 +148,6 @@ export const completePickup = async (pickupId, listingId, pickupData) => {
         listingId,
         pickupId
       );
-      // Also notify the restaurant themselves as a completion receipt.
       createNotification(
         pickupData.restaurantId,
         NOTIFICATION_TYPES.PICKUP_COMPLETE,
@@ -151,6 +155,7 @@ export const completePickup = async (pickupId, listingId, pickupData) => {
         listingId,
         pickupId
       );
+      createSystemMessage(pickupId, 'Pickup marked as completed.');
     }
   } catch (error) {
     throw error;
@@ -175,7 +180,6 @@ export const getPickupByListingId = async (listingId) => {
 };
 
 export const completePickupByNgo = async (pickupId, listingId, pickupData) => {
-  // Same pickupData pattern as completePickup above.
   try {
     const pickupRef = doc(db, COLLECTIONS.PICKUPS, pickupId);
     await updateDoc(pickupRef, {
@@ -190,7 +194,6 @@ export const completePickupByNgo = async (pickupId, listingId, pickupData) => {
       completedAt: serverTimestamp(),
     });
 
-    // NGO confirmed the pickup — notify the restaurant.
     if (pickupData) {
       createNotification(
         pickupData.restaurantId,
@@ -199,7 +202,6 @@ export const completePickupByNgo = async (pickupId, listingId, pickupData) => {
         listingId,
         pickupId
       );
-      // Notify the NGO as a completion receipt.
       createNotification(
         pickupData.ngoId,
         NOTIFICATION_TYPES.PICKUP_COMPLETE,
@@ -207,6 +209,7 @@ export const completePickupByNgo = async (pickupId, listingId, pickupData) => {
         listingId,
         pickupId
       );
+      createSystemMessage(pickupId, 'Pickup marked as completed.');
     }
   } catch (error) {
     throw error;

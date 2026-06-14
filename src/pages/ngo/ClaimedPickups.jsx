@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Package, Clock, MapPin, CheckCircle, X, Navigation } from 'lucide-react';
+import { Package, Clock, MapPin, CheckCircle, X, Navigation, MessageCircle } from 'lucide-react';
 import useAuth from '../../hooks/useAuth';
 import usePickups from '../../hooks/usePickups';
 import useToast from '../../hooks/useToast';
@@ -9,6 +9,7 @@ import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import Spinner from '../../components/common/Spinner';
 import EmptyState from '../../components/common/EmptyState';
+import ChatWindow from '../../components/chat/ChatWindow';
 import { ROLES } from '../../utils/constants';
 import { formatDateTime, formatPickupWindow, toDate } from '../../utils/dateHelpers';
 
@@ -46,7 +47,7 @@ const CountdownTimer = ({ endTime }) => {
   );
 };
 
-const PickupCard = ({ pickup, onComplete, onCancel, actionLoading }) => {
+const PickupCard = ({ pickup, onComplete, onCancel, onChat, actionLoading }) => {
   const isLoading = actionLoading === pickup.id;
 
   return (
@@ -71,10 +72,6 @@ const PickupCard = ({ pickup, onComplete, onCancel, actionLoading }) => {
           <span>{pickup.city}</span>
         </div>
 
-        {/* NEW — Feature H: full street address on the claimed pickup card.
-            This is the most actionable place for the NGO — they need the
-            address when they're about to physically go collect the food.
-            Shown as a distinct highlighted row so it stands out from city. */}
         {pickup.pickupAddress && (
           <div className="flex items-start gap-2">
             <Navigation className="h-4 w-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
@@ -90,7 +87,6 @@ const PickupCard = ({ pickup, onComplete, onCancel, actionLoading }) => {
         </div>
       </div>
 
-      {/* Pickup window + countdown — unchanged */}
       <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-3 mb-5 flex items-center justify-between">
         <div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Pickup window</p>
@@ -105,6 +101,9 @@ const PickupCard = ({ pickup, onComplete, onCancel, actionLoading }) => {
         <Button variant="primary" size="sm" fullWidth loading={isLoading} onClick={() => onComplete(pickup)} icon={CheckCircle}>
           Mark as Collected
         </Button>
+        <Button variant="ghost" size="sm" fullWidth onClick={() => onChat(pickup)} icon={MessageCircle}>
+          Coordinate Pickup
+        </Button>
         <Button variant="danger" size="sm" fullWidth loading={isLoading} onClick={() => onCancel(pickup)} icon={X}>
           Cancel Claim
         </Button>
@@ -113,7 +112,6 @@ const PickupCard = ({ pickup, onComplete, onCancel, actionLoading }) => {
   );
 };
 
-// ClaimedPickups page component — completely unchanged
 const ClaimedPickups = () => {
   const { userProfile } = useAuth();
   const { activePickups, loading, error, cancelPickup, completePickupByNgo } = usePickups(userProfile?.uid, ROLES.NGO);
@@ -121,10 +119,12 @@ const ClaimedPickups = () => {
 
   const [cancelModal, setCancelModal]     = useState({ open: false, pickup: null });
   const [completeModal, setCompleteModal] = useState({ open: false, pickup: null });
+  const [chatModal, setChatModal]         = useState({ open: false, pickup: null });
   const [actionLoading, setActionLoading] = useState(null);
 
   const handleCompleteClick = useCallback((pickup) => { setCompleteModal({ open: true, pickup }); }, []);
   const handleCancelClick   = useCallback((pickup) => { setCancelModal({ open: true, pickup }); }, []);
+  const handleChatClick     = useCallback((pickup) => { setChatModal({ open: true, pickup }); }, []);
 
   const confirmComplete = async () => {
     const { pickup } = completeModal;
@@ -164,7 +164,7 @@ const ClaimedPickups = () => {
             <Package className="h-6 w-6 text-amber-600 dark:text-amber-400" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 ">Claimed Pickups</h1>
+            <h1 className="text-3xl font-bold text-slate-900">Claimed Pickups</h1>
             <p className="text-slate-600 text-base mt-2">Food you've claimed and need to collect</p>
           </div>
         </div>
@@ -187,11 +187,19 @@ const ClaimedPickups = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {activePickups.map((pickup) => (
-              <PickupCard key={pickup.id} pickup={pickup} onComplete={handleCompleteClick} onCancel={handleCancelClick} actionLoading={actionLoading} />
+              <PickupCard
+                key={pickup.id}
+                pickup={pickup}
+                onComplete={handleCompleteClick}
+                onCancel={handleCancelClick}
+                onChat={handleChatClick}
+                actionLoading={actionLoading}
+              />
             ))}
           </div>
         )}
 
+        {/* Confirm collection modal */}
         <Modal isOpen={completeModal.open} onClose={() => setCompleteModal({ open: false, pickup: null })} title="Confirm Collection"
           footer={
             <>
@@ -215,6 +223,7 @@ const ClaimedPickups = () => {
           )}
         </Modal>
 
+        {/* Cancel pickup modal */}
         <Modal isOpen={cancelModal.open} onClose={() => setCancelModal({ open: false, pickup: null })} title="Cancel Pickup"
           footer={
             <>
@@ -234,6 +243,27 @@ const ClaimedPickups = () => {
             </div>
           )}
         </Modal>
+
+        {/* Chat modal */}
+        <Modal
+          isOpen={chatModal.open}
+          onClose={() => setChatModal({ open: false, pickup: null })}
+          title="Coordinate Pickup"
+          size="lg"
+        >
+          {chatModal.pickup && (
+            <ChatWindow
+              pickupId={chatModal.pickup.id}
+              sender={{
+                senderId:   userProfile.uid,
+                senderName: userProfile.name,
+                senderRole: ROLES.NGO,
+              }}
+              pickupLabel={`${chatModal.pickup.foodName} · ${chatModal.pickup.restaurantName}`}
+            />
+          )}
+        </Modal>
+
       </main>
     </div>
   );
