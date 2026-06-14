@@ -255,9 +255,13 @@ const ClaimedPickups = () => {
             <ChatWindow
               pickupId={chatModal.pickup.id}
               sender={{
-                senderId:   userProfile.uid,
-                senderName: userProfile.name,
-                senderRole: ROLES.NGO,
+                senderId:    userProfile.uid,
+                senderName:  userProfile.name,
+                senderRole:  ROLES.NGO,
+                // The restaurant is the recipient of the message notification.
+                recipientId: chatModal.pickup.restaurantId,
+                listingId:   chatModal.pickup.listingId,
+                foodName:    chatModal.pickup.foodName,
               }}
               pickupLabel={`${chatModal.pickup.foodName} · ${chatModal.pickup.restaurantName}`}
             />

@@ -36,6 +36,7 @@ export const PICKUP_STATUS = {
 export const NOTIFICATION_TYPES = {
   LISTING_CLAIMED: 'listing_claimed',
   PICKUP_COMPLETE: 'pickup_complete',
+  NEW_MESSAGE:     'new_message',
 };
 
 export const RATING_LIMITS = {

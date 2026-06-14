@@ -135,3 +135,60 @@ export const markAllNotificationsRead = async (userId) => {
     throw error;
   }
 };
+
+/**
+ * Creates or updates a "new message" notification for a chat recipient.
+ *
+ * Why upsert instead of always creating?
+ * If a sender sends 5 messages in a row before the recipient opens the chat,
+ * we don't want 5 separate notifications cluttering the dropdown. Instead:
+ *  - First message  → creates one NEW_MESSAGE notification
+ *  - Next messages   → update that SAME notification's text + timestamp,
+ *                       as long as it's still unread
+ *  - Once the recipient reads it → the next message creates a fresh one
+ *
+ * This is a pure multi-equality query (userId, pickupId, type, isRead —
+ * all '==', no orderBy/range), so no composite index is required.
+ *
+ * Fire-and-forget — same error-handling pattern as createNotification.
+ *
+ * @param {string}      recipientId - Who should see this notification
+ * @param {string}      pickupId    - The pickup this chat belongs to
+ * @param {string}      message     - Notification text
+ * @param {string|null} listingId   - Related listing ID (or null)
+ */
+export const upsertMessageNotification = async (recipientId, pickupId, message, listingId = null) => {
+  try {
+    const ref = collection(db, COLLECTIONS.NOTIFICATIONS);
+    const q = query(
+      ref,
+      where('userId',  '==', recipientId),
+      where('pickupId','==', pickupId),
+      where('type',    '==', NOTIFICATION_TYPES.NEW_MESSAGE),
+      where('isRead',  '==', false)
+    );
+    const snapshot = await getDocs(q);
+
+    if (!snapshot.empty) {
+      // Update the existing unread notification in place
+      const existing = snapshot.docs[0];
+      await updateDoc(doc(db, COLLECTIONS.NOTIFICATIONS, existing.id), {
+        message,
+        createdAt: serverTimestamp(),
+      });
+    } else {
+      // No unread notification for this pickup yet — create one
+      await addDoc(ref, {
+        userId:    recipientId,
+        type:      NOTIFICATION_TYPES.NEW_MESSAGE,
+        message,
+        listingId,
+        pickupId,
+        isRead:    false,
+        createdAt: serverTimestamp(),
+      });
+    }
+  } catch (error) {
+    console.error('upsertMessageNotification failed:', error);
+  }
+};

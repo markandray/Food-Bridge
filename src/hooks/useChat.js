@@ -11,9 +11,10 @@ import {
 } from '../services/chat.service';
 
 const useChat = (pickupId, sender) => {
-  // sender = { senderId, senderName, senderRole }
-  // Passed in from the page that owns the pickup data — hook never
-  // reads auth directly so it stays reusable for both NGO and restaurant.
+  // sender = { senderId, senderName, senderRole, recipientId, listingId, foodName }
+  // recipientId/listingId/foodName are needed only for the notification
+  // sent to the other party — passed in from the page that owns the pickup data.
+  // Hook never reads auth directly so it stays reusable for both NGO and restaurant.
 
   const [messages, setMessages] = useState([]);
   const [loading, setLoading]   = useState(true);
@@ -51,9 +52,12 @@ const useChat = (pickupId, sender) => {
     setSending(true);
     try {
       await sendMessageService(pickupId, {
-        senderId:   sender.senderId,
-        senderName: sender.senderName,
-        senderRole: sender.senderRole,
+        senderId:    sender.senderId,
+        senderName:  sender.senderName,
+        senderRole:  sender.senderRole,
+        recipientId: sender.recipientId,
+        listingId:   sender.listingId,
+        foodName:    sender.foodName,
         text,
       });
     } catch (err) {
@@ -63,8 +67,13 @@ const useChat = (pickupId, sender) => {
       setSending(false);
     }
   }, [pickupId, sender]);
-
-  return { messages, loading, error, sending, sendMessage };
+  return {
+  messages,
+  loading,
+  error,
+  sending,
+  sendMessage,
+};
 };
 
 export default useChat;

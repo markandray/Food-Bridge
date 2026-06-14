@@ -9,17 +9,21 @@ import { NOTIFICATION_TYPES } from '../../services/notifications.service';
 const TYPE_STYLES = {
   [NOTIFICATION_TYPES.LISTING_CLAIMED]: {
     dot: 'bg-amber-400',
-    bg:  'hover:bg-amber-50',
+    bg:  'hover:bg-amber-50 dark:hover:bg-amber-900/20',
   },
   [NOTIFICATION_TYPES.PICKUP_COMPLETE]: {
     dot: 'bg-blue-400',
-    bg:  'hover:bg-emerald-50',
+    bg:  'hover:bg-emerald-50 dark:hover:bg-emerald-900/20',
+  },
+  [NOTIFICATION_TYPES.NEW_MESSAGE]: {
+    dot: 'bg-violet-400',
+    bg:  'hover:bg-violet-50 dark:hover:bg-violet-900/20',
   },
 };
 
 const DEFAULT_STYLE = {
   dot: 'bg-slate-400',
-  bg:  'hover:bg-slate-50',
+  bg:  'hover:bg-slate-50 dark:hover:bg-slate-700/50',
 };
 
 /**
@@ -76,7 +80,7 @@ const NotificationBell = memo(({
       {/* Bell button */}
       <button
         onClick={handleBellClick}
-        className="relative p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+        className="relative p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
         aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
       >
         <Bell className="h-5 w-5" />
@@ -94,15 +98,15 @@ const NotificationBell = memo(({
           We unmount it entirely when closed so the notification list
           doesn't accumulate stale scroll position between openings. */}
       {open && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl border border-slate-200 shadow-lg z-50 overflow-hidden">
+        <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-lg z-50 overflow-hidden">
 
           {/* Dropdown header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-            <h3 className="text-sm font-semibold text-slate-800">Notifications</h3>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+            <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Notifications</h3>
             {unreadCount > 0 && (
               <button
                 onClick={onMarkAllRead}
-                className="text-xs text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
+                className="text-xs text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium transition-colors"
               >
                 Mark all read
               </button>
@@ -110,24 +114,24 @@ const NotificationBell = memo(({
           </div>
 
           {/* Notification list */}
-          <div className="max-h-80 overflow-y-auto divide-y divide-slate-50">
+          <div className="max-h-80 overflow-y-auto divide-y divide-slate-50 dark:divide-slate-700/50">
             {loading ? (
               // Skeleton rows while first snapshot loads
               <div className="p-4 space-y-3">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="flex gap-3 animate-pulse">
-                    <div className="w-2 h-2 rounded-full bg-slate-200 mt-1.5 flex-shrink-0" />
+                    <div className="w-2 h-2 rounded-full bg-slate-200 dark:bg-slate-600 mt-1.5 flex-shrink-0" />
                     <div className="flex-1 space-y-1.5">
-                      <div className="h-3 bg-slate-200 rounded w-full" />
-                      <div className="h-3 bg-slate-200 rounded w-1/2" />
+                      <div className="h-3 bg-slate-200 dark:bg-slate-600 rounded w-full" />
+                      <div className="h-3 bg-slate-200 dark:bg-slate-600 rounded w-1/2" />
                     </div>
                   </div>
                 ))}
               </div>
             ) : notifications.length === 0 ? (
               <div className="px-4 py-8 text-center">
-                <Bell className="h-8 w-8 text-slate-300 mx-auto mb-2" />
-                <p className="text-sm text-slate-500">No notifications yet</p>
+                <Bell className="h-8 w-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                <p className="text-sm text-slate-500 dark:text-slate-400">No notifications yet</p>
               </div>
             ) : (
               notifications.map((notification) => {
@@ -137,7 +141,7 @@ const NotificationBell = memo(({
                     key={notification.id}
                     onClick={() => handleNotificationClick(notification)}
                     className={`w-full text-left px-4 py-3 flex gap-3 transition-colors ${style.bg} ${
-                      !notification.isRead ? 'bg-slate-50' : 'bg-white'
+                      !notification.isRead ? 'bg-slate-50 dark:bg-slate-700/40' : 'bg-white dark:bg-slate-800'
                     }`}
                   >
                     {/* Colored dot — unread = colored, read = transparent */}
@@ -147,12 +151,14 @@ const NotificationBell = memo(({
 
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm leading-snug ${
-                        notification.isRead ? 'text-slate-500' : 'text-slate-800 font-medium'
+                        notification.isRead
+                          ? 'text-slate-500 dark:text-slate-400'
+                          : 'text-slate-800 dark:text-slate-100 font-medium'
                       }`}>
                         {notification.message}
                       </p>
                       {/* getRelativeTime is already in dateHelpers — shows "2 min ago", "3 hrs ago" etc. */}
-                      <p className="text-xs text-slate-400 mt-0.5">
+                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
                         {notification.createdAt
                           ? getRelativeTime(notification.createdAt)
                           : 'Just now'}
@@ -169,8 +175,8 @@ const NotificationBell = memo(({
 
           {/* Footer — only when there are notifications */}
           {notifications.length > 0 && (
-            <div className="px-4 py-2.5 border-t border-slate-100 bg-slate-50">
-              <p className="text-xs text-slate-400 text-center">
+            <div className="px-4 py-2.5 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/30">
+              <p className="text-xs text-slate-400 dark:text-slate-500 text-center">
                 Showing {notifications.length} most recent
               </p>
             </div>

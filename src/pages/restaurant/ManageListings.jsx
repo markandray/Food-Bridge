@@ -48,9 +48,11 @@ const ManageListings = () => {
     const pickup = activePickups.find((p) => p.listingId === listing.id);
     if (!pickup) return;
     setChatModal({
-      open:    true,
-      pickupId: pickup.id,
-      label:   `${listing.foodName} · ${pickup.ngoName}`,
+      open:        true,
+      pickupId:    pickup.id,
+      recipientId: pickup.ngoId,
+      listingId:   pickup.listingId,
+      label:       `${listing.foodName} · ${pickup.ngoName}`,
     });
   }, [activePickups]);
 
@@ -242,7 +244,7 @@ const ManageListings = () => {
         {/* Chat modal — only available for claimed listings */}
         <Modal
           isOpen={chatModal.open}
-          onClose={() => setChatModal({ open: false, pickupId: null, label: '' })}
+          onClose={() => setChatModal({ open: false, pickupId: null, recipientId: null, listingId: null, label: '' })}
           title="Coordinate Pickup"
           size="lg"
         >
@@ -250,15 +252,19 @@ const ManageListings = () => {
             <ChatWindow
               pickupId={chatModal.pickupId}
               sender={{
-                senderId:   userProfile.uid,
-                senderName: userProfile.name,
-                senderRole: ROLES.RESTAURANT,
+                senderId:    userProfile.uid,
+                senderName:  userProfile.name,
+                senderRole:  ROLES.RESTAURANT,
+                // The NGO is the recipient of the message notification.
+                recipientId: chatModal.recipientId,
+                listingId:   chatModal.listingId,
+                foodName:    chatModal.label.split(' · ')[0],
               }}
               pickupLabel={chatModal.label}
             />
           )}
         </Modal>
-        
+
       </main>
     </div>
   );

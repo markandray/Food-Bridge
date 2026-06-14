@@ -14,6 +14,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { COLLECTIONS } from '../utils/constants';
+import { upsertMessageNotification } from './notifications.service';
 
 // ---------------------------------------------------------------------------
 // Helper — returns a ref to the messages subcollection for a given pickup
@@ -57,8 +58,12 @@ export const subscribeToMessages = (pickupId, callback, onError) => {
 // senderId, senderName, senderRole come from the calling hook —
 // never trusted from user input.
 // ---------------------------------------------------------------------------
-export const sendMessage = async (pickupId, { senderId, senderName, senderRole, text }) => {
+export const sendMessage = async (
+  pickupId,
+  { senderId, senderName, senderRole, text, recipientId, listingId, foodName }
+) => {
   if (!text?.trim()) return;
+
   await addDoc(messagesRef(pickupId), {
     senderId,
     senderName,
@@ -67,8 +72,18 @@ export const sendMessage = async (pickupId, { senderId, senderName, senderRole, 
     createdAt: serverTimestamp(),
     isSystem: false,
   });
-};
 
+  // Notify the other party — never notify yourself.
+  // Fire-and-forget: a notification failure must never block message sending.
+  if (recipientId && recipientId !== senderId) {
+    upsertMessageNotification(
+      recipientId,
+      pickupId,
+      `${senderName} sent you a message about "${foodName}".`,
+      listingId
+    );
+  }
+};
 // ---------------------------------------------------------------------------
 // createSystemMessage
 //
